@@ -13,6 +13,7 @@ RUN apt-get update && \
   wget && \
   rm -rf /var/lib/apt/lists/*
 
+# jq
 RUN cd /usr/local/bin && \
   wget --no-verbose -O jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 && \
   chmod +x jq
