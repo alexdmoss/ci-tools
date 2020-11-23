@@ -1,2 +1,3 @@
 # ci-tools
-Docker container with useful tools for running CI jobs
+
+A Docker container with what I consider useful tools for running my CI jobs!
