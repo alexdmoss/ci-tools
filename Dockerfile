@@ -42,8 +42,8 @@ RUN wget --no-verbose -O /tmp/kubernetes-client.tar.gz https://dl.k8s.io/v${KUBE
 
 # kustomize
 # checksum from github release: https://github.com/kubernetes-sigs/kustomize/releases/tag/kustomize%2Fv3.5.3
-ARG KUSTOMIZE_VERSION=3.5.5
-ARG KUSTOMIZE_SHA256="23306e0c0fb24f5a9fea4c3b794bef39211c580e4cbaee9e21b9891cb52e73e7"
+ARG KUSTOMIZE_VERSION=4.1.2
+ARG KUSTOMIZE_SHA256="4efb7d0dadba7fab5191c680fcb342c2b6f252f230019cf9cffd5e4b0cad1d12"
 RUN cd /usr/local/bin && \
   wget --no-verbose -O /tmp/kustomize.tar.gz "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_linux_amd64.tar.gz" && \
   echo "${KUSTOMIZE_SHA256} /tmp/kustomize.tar.gz" | sha256sum -c && \
