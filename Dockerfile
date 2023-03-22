@@ -32,9 +32,9 @@ RUN wget --no-verbose -O /tmp/google-cloud-sdk.tar.gz https://dl.google.com/dl/c
   find /usr/local/google-cloud-sdk -type d -name __pycache__ -exec rm -r {} \+
 
 # kubectl
-# checksum from changelog: https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.23.md#client-binaries
-ARG KUBECTL_VERSION=1.25.3
-ARG KUBECTL_SHA512="7ee6292a77d7042ed3589f998231985e82abd90143496a65e29b8141dd39dced5f9cd87a7eeba1efa4dbf61e5ddec9e7929c14b7afcdf01d83af322ddf839efb"
+# checksum from changelog: https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.25.md#client-binaries
+ARG KUBECTL_VERSION=1.25.8
+ARG KUBECTL_SHA512="e2179fba92c3692ef44377276e109f87c12a7166b1fd93ca826527406a6698f551afbf702d67d9469e2512ef5137a71c5ad809fc0f384dfbf7db53ca83dc3033"
 RUN wget --no-verbose -O /tmp/kubernetes-client.tar.gz https://dl.k8s.io/v${KUBECTL_VERSION}/kubernetes-client-linux-amd64.tar.gz && \
   echo "${KUBECTL_SHA512} /tmp/kubernetes-client.tar.gz" | sha512sum -c && \
   tar -C /usr/local/bin -xz -f /tmp/kubernetes-client.tar.gz --strip-components=3 kubernetes/client/bin/kubectl && \
