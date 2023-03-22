@@ -1,0 +1,25 @@
+stages:
+- build-and-push
+
+variables:
+  IMAGE_TAG: "423.0.0"
+
+build:
+  stage: build-and-push
+  image: docker:stable
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_DRIVER: overlay2
+  only:
+  - main
+  services:
+    - docker:dind
+  before_script:
+  - echo "${DOCKER_CREDS}" | docker login --username mosstech --password-stdin
+  script:
+    - docker build -t mosstech/ci-tools:${IMAGE_TAG} .
+    - docker tag mosstech/ci-tools:{IMAGE_TAG mosstech/ci-tools:latest
+    - docker push mosstech/ci-tools:${IMAGE_TAG}
+    - docker push mosstech/ci-tools:latest
+  after_script:
+    - rm -f /root/.docker/config.json
