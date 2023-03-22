@@ -19,6 +19,15 @@ RUN cd /usr/local/bin && \
   wget --no-verbose -O jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 && \
   chmod +x jq
 
+ARG PIPENV_VERSION=2021.5.29
+ARG YAMLLINT_VERSION=1.26.3
+ARG YQ_VERSION=2.12.2
+RUN pip install --upgrade pip
+RUN pip --quiet --no-cache-dir install \
+  pipenv==${PIPENV_VERSION} \
+  yamllint==${YAMLLINT_VERSION} \
+  yq==${YQ_VERSION}
+
 # gcloud
 ENV PATH=$PATH:/usr/local/google-cloud-sdk/bin
 ARG GCLOUD_VERSION=423.0.0
