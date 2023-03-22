@@ -18,7 +18,7 @@ build:
   - echo "${DOCKER_CREDS}" | docker login --username mosstech --password-stdin
   script:
     - docker build -t mosstech/ci-tools:${IMAGE_TAG} .
-    - docker tag mosstech/ci-tools:{IMAGE_TAG} mosstech/ci-tools:latest
+    - docker tag mosstech/ci-tools:${IMAGE_TAG} mosstech/ci-tools:latest
     - docker push mosstech/ci-tools:${IMAGE_TAG}
     - docker push mosstech/ci-tools:latest
   after_script:
