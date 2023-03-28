@@ -2,19 +2,17 @@ stages:
 - build-and-push
 
 variables:
-  IMAGE_TAG: "423.0.0"
+  IMAGE_TAG: "424.0.0"
 
 build:
   stage: build-and-push
   image: docker:stable
-  variables:
-    DOCKER_HOST: tcp://docker:2375/
-    DOCKER_DRIVER: overlay2
   only:
   - main
   services:
     - docker:dind
   before_script:
+  - until docker info >/dev/null; do sleep 1; echo "Waiting for docker startup"; done
   - echo "${DOCKER_CREDS}" | docker login --username mosstech --password-stdin
   script:
     - docker build -t mosstech/ci-tools:${IMAGE_TAG} .
