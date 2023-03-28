@@ -1,4 +1,4 @@
-FROM python:3.9.10-slim
+FROM python:3.9-slim
 
 RUN apt-get update && \
   apt-get --quiet --no-install-recommends --yes install \
@@ -19,9 +19,9 @@ RUN cd /usr/local/bin && \
   wget --no-verbose -O jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 && \
   chmod +x jq
 
-ARG PIPENV_VERSION=2021.5.29
-ARG YAMLLINT_VERSION=1.26.3
-ARG YQ_VERSION=2.12.2
+ARG PIPENV_VERSION=2023.3.20
+ARG YAMLLINT_VERSION=1.30.0
+ARG YQ_VERSION=3.1.1
 RUN pip install --upgrade pip
 RUN pip --quiet --no-cache-dir install \
   pipenv==${PIPENV_VERSION} \
@@ -30,12 +30,13 @@ RUN pip --quiet --no-cache-dir install \
 
 # gcloud
 ENV PATH=$PATH:/usr/local/google-cloud-sdk/bin
-ARG GCLOUD_VERSION=423.0.0
+ARG GCLOUD_VERSION=424.0.0
 RUN wget --no-verbose -O /tmp/google-cloud-sdk.tar.gz https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GCLOUD_VERSION}-linux-x86_64.tar.gz && \
   tar -C /usr/local --keep-old-files -xz -f /tmp/google-cloud-sdk.tar.gz && \
   gcloud config set --installation component_manager/disable_update_check true && \
   gcloud config set --installation core/disable_usage_reporting true && \
   gcloud components install beta --quiet && \
+  gcloud components install gke-gcloud-auth-plugin --quiet && \
   rm -f /tmp/google-cloud-sdk.tar.gz && \
   rm -rf /usr/local/google-cloud-sdk/.install/.backup && \
   find /usr/local/google-cloud-sdk -type d -name __pycache__ -exec rm -r {} \+
