@@ -30,7 +30,7 @@ RUN pip --quiet --no-cache-dir install \
 
 # gcloud
 ENV PATH=$PATH:/usr/local/google-cloud-sdk/bin
-ARG GCLOUD_VERSION=429.0.0
+ARG GCLOUD_VERSION=460.0.0
 RUN wget --no-verbose -O /tmp/google-cloud-sdk.tar.gz https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GCLOUD_VERSION}-linux-x86_64.tar.gz && \
   tar -C /usr/local --keep-old-files -xz -f /tmp/google-cloud-sdk.tar.gz && \
   gcloud config set --installation component_manager/disable_update_check true && \
@@ -42,9 +42,9 @@ RUN wget --no-verbose -O /tmp/google-cloud-sdk.tar.gz https://dl.google.com/dl/c
   find /usr/local/google-cloud-sdk -type d -name __pycache__ -exec rm -r {} \+
 
 # kubectl
-# checksum from changelog: https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.25.md#client-binaries
-ARG KUBECTL_VERSION=1.25.8
-ARG KUBECTL_SHA512="e2179fba92c3692ef44377276e109f87c12a7166b1fd93ca826527406a6698f551afbf702d67d9469e2512ef5137a71c5ad809fc0f384dfbf7db53ca83dc3033"
+# checksum from changelog: https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.27.md#client-binaries
+ARG KUBECTL_VERSION=1.27.10
+ARG KUBECTL_SHA512="da988a720d1eccdfc3be41a18b4cbb5c95bd81b465720afb2e8250d4b336196efe390b0944ef8ff456bb557fe4ee570e793f612959cae190c0dc32ffbc4c84ec"
 RUN wget --no-verbose -O /tmp/kubernetes-client.tar.gz https://dl.k8s.io/v${KUBECTL_VERSION}/kubernetes-client-linux-amd64.tar.gz && \
   echo "${KUBECTL_SHA512} /tmp/kubernetes-client.tar.gz" | sha512sum -c && \
   tar -C /usr/local/bin -xz -f /tmp/kubernetes-client.tar.gz --strip-components=3 kubernetes/client/bin/kubectl && \
@@ -52,8 +52,8 @@ RUN wget --no-verbose -O /tmp/kubernetes-client.tar.gz https://dl.k8s.io/v${KUBE
 
 # kustomize
 # checksum from github release: https://github.com/kubernetes-sigs/kustomize/releases/tag/kustomize%2Fv4.1.2
-ARG KUSTOMIZE_VERSION=4.1.2
-ARG KUSTOMIZE_SHA256="4efb7d0dadba7fab5191c680fcb342c2b6f252f230019cf9cffd5e4b0cad1d12"
+ARG KUSTOMIZE_VERSION=5.2.1
+ARG KUSTOMIZE_SHA256="88346543206b889f9287c0b92c70708040ecd5aad54dd33019c4d6579cd24de8"
 RUN cd /usr/local/bin && \
   wget --no-verbose -O /tmp/kustomize.tar.gz "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_linux_amd64.tar.gz" && \
   echo "${KUSTOMIZE_SHA256} /tmp/kustomize.tar.gz" | sha256sum -c && \
@@ -65,5 +65,8 @@ ENV TFENV_AUTO_INSTALL=true
 RUN git clone https://github.com/tfutils/tfenv.git ~/.tfenv \
     && ln -s ~/.tfenv/bin/* /usr/local/bin \
     && mkdir ~/.tfenv/versions
+
+# pyenv
+RUN git clone https://github.com/pyenv/pyenv.git ~/.pyenv
 
 CMD ["/bin/bash"]
