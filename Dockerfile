@@ -67,6 +67,9 @@ RUN git clone https://github.com/tfutils/tfenv.git ~/.tfenv \
     && mkdir ~/.tfenv/versions
 
 # pyenv
-RUN git clone https://github.com/pyenv/pyenv.git ~/.pyenv
+RUN git clone https://github.com/pyenv/pyenv.git ~/.pyenv && \
+    echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc && \
+    echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc && \
+    echo 'eval "$(pyenv init -)"' >> ~/.bashrc
 
 CMD ["/bin/bash"]
