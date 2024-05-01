@@ -13,11 +13,11 @@ build:
     - docker:dind
   before_script:
   - until docker info >/dev/null; do sleep 1; echo "Waiting for docker startup"; done
-  - echo "${DOCKER_CREDS}" | docker login --username mosstech --password-stdin
+  - echo "${DOCKER_CREDS}" | docker login --username al3xos --password-stdin
   script:
-    - docker build -t mosstech/ci-tools:${IMAGE_TAG} .
-    - docker tag mosstech/ci-tools:${IMAGE_TAG} mosstech/ci-tools:latest
-    - docker push mosstech/ci-tools:${IMAGE_TAG}
-    - docker push mosstech/ci-tools:latest
+    - docker build -t al3xos/ci-tools:${IMAGE_TAG} .
+    - docker tag al3xos/ci-tools:${IMAGE_TAG} al3xos/ci-tools:latest
+    - docker push al3xos/ci-tools:${IMAGE_TAG}
+    - docker push al3xos/ci-tools:latest
   after_script:
     - rm -f /root/.docker/config.json
