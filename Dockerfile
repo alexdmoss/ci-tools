@@ -70,10 +70,11 @@ RUN pip --quiet --no-cache-dir install \
   yamllint==${YAMLLINT_VERSION} \
   yq==${YQ_VERSION}
 
-#tenv
-RUN curl -sSLo /tmp/tenv.tar.gz https://github.com/tofuutils/tenv/releases/download/v1.10.0/tenv_v1.10.0_Linux_x86_64.tar.gz && \
-    tar -C /usr/local/bin -xz -f /tmp/tenv.tar.gz && \
-    rm /tmp/tenv.tar.gz
+# tfenv
+ENV TFENV_AUTO_INSTALL=true
+RUN git clone https://github.com/tfutils/tfenv.git ~/.tfenv \
+    && ln -s ~/.tfenv/bin/* /usr/local/bin \
+    && mkdir ~/.tfenv/versions
 
 # docker
 RUN apt-get update \
