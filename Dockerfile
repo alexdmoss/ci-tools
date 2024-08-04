@@ -93,4 +93,9 @@ RUN git clone https://github.com/pyenv/pyenv.git ~/.pyenv && \
     echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc && \
     echo 'eval "$(pyenv init -)"' >> ~/.bashrc
 
+RUN wget --no-verbose -O hugo.tar.gz https://github.com/gohugoio/hugo/releases/download/v0.90.1/hugo_extended_0.90.1_Linux-64bit.tar.gz && \
+    tar zxf hugo.tar.gz && \
+    mv ./hugo /usr/local/bin/ && \
+    rm hugo.tar.gz
+
 CMD ["/bin/bash"]
