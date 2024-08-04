@@ -12,6 +12,7 @@ RUN apt-get update \
   shellcheck \
   unzip \
   wget \
+  tar \
   procps
 
 RUN cd /usr/local/bin && \
@@ -21,7 +22,7 @@ RUN cd /usr/local/bin && \
 # gcloud
 # SHA256 checksum for latest version is found on https://cloud.google.com/sdk/docs/downloads-versioned-archives#installation_instructions
 ENV PATH=$PATH:/usr/local/google-cloud-sdk/bin
-ARG GCLOUD_VERSION=460.0.0
+ARG GCLOUD_VERSION=486.0.0
 RUN wget --no-verbose -O /tmp/google-cloud-sdk.tar.gz https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GCLOUD_VERSION}-linux-x86_64.tar.gz && \
   tar -C /usr/local --keep-old-files -xz -f /tmp/google-cloud-sdk.tar.gz && \
   gcloud config set --installation component_manager/disable_update_check true && \
@@ -34,8 +35,8 @@ RUN wget --no-verbose -O /tmp/google-cloud-sdk.tar.gz https://dl.google.com/dl/c
 
 # Setup Kubernetes CLI - NB: stay within +/-1 of server version
 # SHA512 checksum is from the Kubernetes changelog e.g. https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.27.md#client-binaries
-ARG KUBECTL_VERSION=1.27.8
-ARG KUBECTL_SHA512="d52faf06b8b5499564ddb06836f76e3a330f8f21e0fe7ffee8e6f36a95c40bbed7ef8db8aefd48f867b4d63fe02f1f562a146b71f669e960f1c6ed18820f36dd"
+ARG KUBECTL_VERSION=1.30.3
+ARG KUBECTL_SHA512="88ad514acfc33b49161dedbbbb6559660f7a091319806daa124098f9c3d17c760e72324e5d09167a0a8d80275195b9012596da7ee974f628414179159ad4f3de"
 RUN wget --no-verbose -O /tmp/kubernetes-client.tar.gz https://dl.k8s.io/v${KUBECTL_VERSION}/kubernetes-client-linux-amd64.tar.gz && \
   echo "${KUBECTL_SHA512} /tmp/kubernetes-client.tar.gz" | sha512sum -c && \
   tar -C /usr/local/bin -xz -f /tmp/kubernetes-client.tar.gz --strip-components=3 kubernetes/client/bin/kubectl && \
@@ -43,9 +44,9 @@ RUN wget --no-verbose -O /tmp/kubernetes-client.tar.gz https://dl.k8s.io/v${KUBE
 ENV USE_GKE_GCLOUD_AUTH_PLUGIN=True
 
 # kustomize
-# checksum from github release: https://github.com/kubernetes-sigs/kustomize/releases/tag/kustomize%2Fv4.1.2
-ARG KUSTOMIZE_VERSION=5.2.1
-ARG KUSTOMIZE_SHA256="88346543206b889f9287c0b92c70708040ecd5aad54dd33019c4d6579cd24de8"
+# checksum from github release: https://github.com/kubernetes-sigs/kustomize/releases/tag/kustomize%2Fv5.4.3
+ARG KUSTOMIZE_VERSION=5.4.3
+ARG KUSTOMIZE_SHA256="3669470b454d865c8184d6bce78df05e977c9aea31c30df3c669317d43bcc7a7"
 RUN cd /usr/local/bin && \
   wget --no-verbose -O /tmp/kustomize.tar.gz "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_linux_amd64.tar.gz" && \
   echo "${KUSTOMIZE_SHA256} /tmp/kustomize.tar.gz" | sha256sum -c && \
@@ -61,7 +62,7 @@ RUN wget --no-verbose -O /tmp/go-containerregistry.tar.gz https://github.com/goo
   tar -C /usr/local/bin -xz -f /tmp/go-containerregistry.tar.gz gcrane && \
   rm /tmp/go-containerregistry.tar.gz
 
-ARG PIPENV_VERSION=2023.8.20
+ARG PIPENV_VERSION=2024.0.1
 ARG YAMLLINT_VERSION=1.32.0
 ARG YQ_VERSION=3.2.2
 RUN pip install --upgrade pip
