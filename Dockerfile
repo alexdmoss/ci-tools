@@ -19,6 +19,15 @@ RUN cd /usr/local/bin && \
   wget --no-verbose -O jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 && \
   chmod +x jq
 
+# snyk
+COPY --from=snyk/snyk:python-3.11 /usr/local/bin/snyk /usr/local/bin/snyk
+
+# gitleaks
+ARG GITLEAK_VERSION=8.26.0
+RUN wget --no-verbose -O /tmp/gitleaks_${GITLEAK_VERSION}_linux_x64.tar.gz https://github.com/zricethezav/gitleaks/releases/download/v${GITLEAK_VERSION}/gitleaks_${GITLEAK_VERSION}_linux_x64.tar.gz && \
+    tar -C /usr/local/bin --keep-old-files -xz -f /tmp/gitleaks_${GITLEAK_VERSION}_linux_x64.tar.gz
+RUN chmod +x /usr/local/bin/gitleaks
+
 # gcloud
 # SHA256 checksum for latest version is found on https://cloud.google.com/sdk/docs/downloads-versioned-archives#installation_instructions
 ENV PATH=$PATH:/usr/local/google-cloud-sdk/bin
