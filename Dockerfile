@@ -19,6 +19,13 @@ RUN cd /usr/local/bin && \
   wget --no-verbose -O jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 && \
   chmod +x jq
 
+# Install Go
+RUN wget --no-verbose -O /tmp/go1.24.3.linux-amd64.tar.gz https://dl.google.com/go/go1.24.3.linux-amd64.tar.gz
+RUN echo "3333f6ea53afa971e9078895eaa4ac7204a8c6b5c68c10e6bc9a33e8e391bdd8 /tmp/go1.24.3.linux-amd64.tar.gz" | sha256sum -c
+RUN rm -rf /usr/local/go && tar -C /usr/local -xzf /tmp/go1.24.3.linux-amd64.tar.gz
+ENV GOROOT=/usr/local/go
+ENV PATH=$PATH:$GOROOT/bin
+
 # gcloud
 # SHA256 checksum for latest version is found on https://cloud.google.com/sdk/docs/downloads-versioned-archives#installation_instructions
 ENV PATH=$PATH:/usr/local/google-cloud-sdk/bin
