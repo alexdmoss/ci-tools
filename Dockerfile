@@ -1,6 +1,7 @@
 FROM --platform=linux/amd64 python:3.11-slim
 
 RUN apt-get update && apt-get --quiet --no-install-recommends --yes install \
+    build-essential \
     curl \
     gettext-base \
     git \
