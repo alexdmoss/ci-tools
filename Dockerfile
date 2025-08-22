@@ -39,6 +39,7 @@ RUN tar -C /usr/local --keep-old-files -xz -f /tmp/google-cloud-sdk.tar.gz && \
     gcloud config set --installation component_manager/disable_update_check true && \
     gcloud config set --installation core/disable_usage_reporting true && \
     gcloud components install beta --quiet && \
+    gcloud components install alpha --quiet && \
     gcloud components install gke-gcloud-auth-plugin --quiet && \
     rm -f /tmp/google-cloud-sdk.tar.gz && \
     rm -rf /usr/local/google-cloud-sdk/.install/.backup && \
