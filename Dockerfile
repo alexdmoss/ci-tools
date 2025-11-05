@@ -97,6 +97,8 @@ COPY --from=snyk/snyk:python-3.11 /usr/local/bin/snyk /usr/local/bin/snyk
 RUN python3 -m pip install semgrep
 # kics
 COPY --from=checkmarx/kics:latest /app/bin/kics /usr/local/bin/kics
+# trivy
+COPY --from=aquasec/trivy:latest /usr/local/bin/trivy /usr/local/bin/trivy
 
 # gitleaks
 ARG GITLEAK_VERSION=8.28.0
