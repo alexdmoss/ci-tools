@@ -2,7 +2,7 @@ stages:
 - build-and-push
 
 variables:
-  IMAGE_TAG: "546.0.0"
+  IMAGE_TAG: "546.0.1"
 
 build:
   stage: build-and-push
