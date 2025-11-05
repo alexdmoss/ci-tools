@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 python:3.11-slim
+FROM --platform=linux/amd64 python:3.12-slim
 
 RUN apt-get update && apt-get --quiet --no-install-recommends --yes install \
     build-essential \
@@ -33,7 +33,7 @@ ENV PATH=$PATH:$GOROOT/bin
 # gcloud
 # SHA256 checksum for latest version is found on https://cloud.google.com/sdk/docs/downloads-versioned-archives#installation_instructions
 ENV PATH=$PATH:/usr/local/google-cloud-sdk/bin
-ARG GCLOUD_VERSION=525.0.0
+ARG GCLOUD_VERSION=546.0.0
 ADD https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GCLOUD_VERSION}-linux-x86_64.tar.gz /tmp/google-cloud-sdk.tar.gz
 RUN tar -C /usr/local --keep-old-files -xz -f /tmp/google-cloud-sdk.tar.gz && \
     gcloud config set --installation component_manager/disable_update_check true && \
@@ -46,7 +46,7 @@ RUN tar -C /usr/local --keep-old-files -xz -f /tmp/google-cloud-sdk.tar.gz && \
     find /usr/local/google-cloud-sdk -type d -name __pycache__ -exec rm -r {} \+
 
 # Setup Kubernetes CLI - NB: stay within +/-1 of server version
-ARG KUBECTL_VERSION=1.33.1
+ARG KUBECTL_VERSION=1.34.1
 ADD https://dl.k8s.io/v${KUBECTL_VERSION}/kubernetes-client-linux-amd64.tar.gz kubernetes-client.tar.gz
 RUN tar -xz -f kubernetes-client.tar.gz --strip-components=3 kubernetes/client/bin/kubectl && rm kubernetes-client.tar.gz
 ENV USE_GKE_GCLOUD_AUTH_PLUGIN=True
@@ -87,15 +87,19 @@ RUN git clone https://github.com/pyenv/pyenv.git ~/.pyenv && \
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
 
 # hugo
-ARG HUGO_VERSION=0.147.3
+ARG HUGO_VERSION=0.152.2
 ADD https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_Linux-64bit.tar.gz hugo.tar.gz
 RUN tar zxf hugo.tar.gz && rm hugo.tar.gz
 
 # snyk
 COPY --from=snyk/snyk:python-3.11 /usr/local/bin/snyk /usr/local/bin/snyk
+# semgrep
+RUN python3 -m pip install semgrep
+# kics
+COPY --from=checkmarx/kics:latest /app/bin/kics /usr/local/bin/kics
 
 # gitleaks
-ARG GITLEAK_VERSION=8.26.0
+ARG GITLEAK_VERSION=8.28.0
 ADD https://github.com/zricethezav/gitleaks/releases/download/v${GITLEAK_VERSION}/gitleaks_${GITLEAK_VERSION}_linux_x64.tar.gz gitleaks_${GITLEAK_VERSION}_linux_x64.tar.gz
 RUN tar -xz -f gitleaks_${GITLEAK_VERSION}_linux_x64.tar.gz && chmod +x gitleaks
 
