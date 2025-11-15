@@ -12,21 +12,16 @@ build-and-push:
     name: moby/buildkit:rootless
     entrypoint: [""]
   before_script:
-  - |
-    mkdir -p $CI_PROJECT_DIR/bin
-    export PATH=${CI_PROJECT_DIR}/bin:${PATH}
-    wget -q -O credHelper.tar.gz https://github.com/GoogleCloudPlatform/docker-credential-gcr/releases/download/v2.1.29/docker-credential-gcr_linux_amd64-2.1.29.tar.gz
-    tar -xzf credHelper.tar.gz
-    chmod +x docker-credential-gcr
-    mv docker-credential-gcr ${CI_PROJECT_DIR}/bin/
-    docker-credential-gcr configure-docker --registries=europe-docker.pkg.dev
+    - mkdir -p ~/.docker
+    - creds=$(echo -n "al3xos:${DOCKER_PASSWORD}" | base64 | tr -d '\n')
+    - echo "{\"auths\":{\"https://index.docker.io/v1/\":{\"auth\":\"${DOCKER_CREDS}\"}}}" > ~/.docker/config.json
   script:
-  - |
-    echo "Building image [al3xos/ci-tools:${IMAGE_TAG}]"
-    buildctl-daemonless.sh build \
-      --frontend=dockerfile.v0 \
-      --local context=${CI_PROJECT_DIR} \
-      --local dockerfile=${CI_PROJECT_DIR} \
-      --opt filename=Dockerfile \
-      --output type=image,name=al3xos/ci-tools:${IMAGE_TAG},push=true \
-      --output type=image,name=al3xos/ci-tools:latest,push=true
+    - |
+      echo "Building image [al3xos/ci-tools:${IMAGE_TAG}]"
+      buildctl-daemonless.sh build \
+        --frontend=dockerfile.v0 \
+        --local context=${CI_PROJECT_DIR} \
+        --local dockerfile=${CI_PROJECT_DIR} \
+        --opt filename=Dockerfile \
+        --output type=image,name=al3xos/ci-tools:${IMAGE_TAG},push=true \
+        --output type=image,name=al3xos/ci-tools:latest,push=true
