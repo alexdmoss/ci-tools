@@ -73,7 +73,7 @@ RUN git clone https://github.com/tfutils/tfenv.git ~/.tfenv \
 # docker
 RUN curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg \
     && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(awk -F '=' '/VERSION_CODENAME=/ {print $2}' /etc/os-release) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null \
-    && apt-get update && apt-get --quiet --no-install-recommends --yes install docker-ce-cli \
+    && apt-get update && apt-get --quiet --no-install-recommends --yes install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin \
     && rm -rf /var/lib/apt/lists/*
 RUN gcloud auth configure-docker
 
