@@ -14,7 +14,7 @@ build-and-push:
   before_script:
     - mkdir -p ~/.docker
     - creds=$(echo -n "al3xos:${DOCKER_CREDS}" | base64 | tr -d '\n')
-    - echo "{\"auths\":{\"https://index.docker.io/v1/\":{\"auth\":\"${DOCKER_CREDS}\"}}}" > ~/.docker/config.json
+    - echo "{\"auths\":{\"https://index.docker.io/v1/\":{\"auth\":\"${creds}\"}}}" > ~/.docker/config.json
   script:
     - |
       echo "Building image [al3xos/ci-tools:${IMAGE_TAG}]"
