@@ -26,6 +26,7 @@ build-and-push:
     buildctl-daemonless.sh build \
       --frontend=dockerfile.v0 \
       --local context=${CI_PROJECT_DIR} \
-      --local dockerfile=Dockerfile \
+      --local dockerfile=${CI_PROJECT_DIR} \
+      --opt filename=Dockerfile \
       --output type=image,name=al3xos/ci-tools:${IMAGE_TAG},push=true \
       --output type=image,name=al3xos/ci-tools:latest,push=true
