@@ -4,23 +4,28 @@ stages:
 variables:
   IMAGE_TAG: "546.0.1"
 
-build:
+build-and-push:
   stage: build-and-push
-  image: docker:stable
-  only:
-  - main
-  services:
-    - docker:dind
-  variables:
-    DOCKER_HOST: tcp://docker:2375/
-    DOCKER_DRIVER: overlay2
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+  image:
+    name: moby/buildkit:rootless
+    entrypoint: [""]
   before_script:
-  - until docker info >/dev/null; do sleep 1; echo "Waiting for docker startup"; done
-  - echo "${DOCKER_CREDS}" | docker login --username al3xos --password-stdin
+  - |
+    mkdir -p $CI_PROJECT_DIR/bin
+    export PATH=${CI_PROJECT_DIR}/bin:${PATH}
+    wget -q -O credHelper.tar.gz https://github.com/GoogleCloudPlatform/docker-credential-gcr/releases/download/v2.1.29/docker-credential-gcr_linux_amd64-2.1.29.tar.gz
+    tar -xzf credHelper.tar.gz
+    chmod +x docker-credential-gcr
+    mv docker-credential-gcr ${CI_PROJECT_DIR}/bin/
+    docker-credential-gcr configure-docker --registries=europe-docker.pkg.dev
   script:
-    - docker build -t al3xos/ci-tools:${IMAGE_TAG} .
-    - docker tag al3xos/ci-tools:${IMAGE_TAG} al3xos/ci-tools:latest
-    - docker push al3xos/ci-tools:${IMAGE_TAG}
-    - docker push al3xos/ci-tools:latest
-  after_script:
-    - rm -f /root/.docker/config.json
+  - |
+    echo "Building image [al3xos/ci-tools:${IMAGE_TAG}]"
+    buildctl-daemonless.sh build \
+      --frontend=dockerfile.v0 \
+      --local context=${CI_PROJECT_DIR} \
+      --local dockerfile=Dockerfile \
+      --output type=image,name=al3xos/ci-tools:${IMAGE_TAG},push=true \
+      --output type=image,name=al3xos/ci-tools:latest,push=true
