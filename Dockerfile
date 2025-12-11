@@ -22,6 +22,10 @@ WORKDIR /usr/local/bin
 ADD https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 jq
 RUN chmod +x jq
 
+# Install alexos-cli
+ADD bin/alexos-cli /usr/local/bin/alexos-cli
+RUN chmod +x /usr/local/bin/alexos-cli
+
 # Install Go
 ADD https://dl.google.com/go/go1.24.3.linux-amd64.tar.gz /tmp/go1.24.3.linux-amd64.tar.gz
 RUN echo "3333f6ea53afa971e9078895eaa4ac7204a8c6b5c68c10e6bc9a33e8e391bdd8 /tmp/go1.24.3.linux-amd64.tar.gz" | sha256sum -c && \

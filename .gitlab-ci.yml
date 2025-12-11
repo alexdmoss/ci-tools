@@ -1,11 +1,37 @@
 stages:
+- artifacts
 - build-and-push
 
 variables:
   IMAGE_TAG: "546.0.1"
+  ALEXOS_CLI_PROJECT_ID: "77029455"
+
+download-alexos-cli:
+  stage: artifacts
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache curl jq
+  script:
+    - |
+      LATEST_VERSION=$(curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" "${CI_API_V4_URL}/projects/${ALEXOS_CLI_PROJECT_ID}/packages?package_name=alexos-cli&order_by=created_at&sort=desc&per_page=1" | jq -r '.[0].version')
+      curl --fail --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --output alexos-cli "${CI_API_V4_URL}/projects/${ALEXOS_CLI_PROJECT_ID}/packages/generic/alexos-cli/${ALEXOS_CLI_VERSION}/alexos-cli-linux-amd64"
+      echo "Using alexos-cli version: ${LATEST_VERSION}"
+
+    - |
+      mkdir -p ${CI_PROJECT_DIR}/bin
+      curl --fail --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --output ${CI_PROJECT_DIR}/bin "${CI_API_V4_URL}/projects/${ALEXOS_CLI_PROJECT_ID}/packages/generic/alexos-cli/${LATEST_VERSION}/alexos-cli-linux-amd64"
+    - chmod +x ${CI_PROJECT_DIR}/bin/alexos-cli
+  artifacts:
+    paths:
+      - bin/alexos-cli
+    untracked: false
+    when: on_success
+    expire_in: "1 day"
 
 build-and-push:
   stage: build-and-push
+  needs:
+    - download-alexos-cli
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
   image:
