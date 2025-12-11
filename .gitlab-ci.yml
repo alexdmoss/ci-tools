@@ -18,12 +18,12 @@ download-alexos-cli:
       echo "Using alexos-cli version: ${LATEST_VERSION}"
 
     - |
-      mkdir -p ${CI_PROJECT_DIR}/custom
-      curl --fail --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --output ${CI_PROJECT_DIR}/custom/alexos-cli "${CI_API_V4_URL}/projects/${ALEXOS_CLI_PROJECT_ID}/packages/generic/alexos-cli/${LATEST_VERSION}/alexos-cli-linux-amd64"
-    - chmod +x ${CI_PROJECT_DIR}/custom/alexos-cli
+      mkdir -p ${CI_PROJECT_DIR}/bin
+      curl --fail --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --output ${CI_PROJECT_DIR}/bin/alexos-cli "${CI_API_V4_URL}/projects/${ALEXOS_CLI_PROJECT_ID}/packages/generic/alexos-cli/${LATEST_VERSION}/alexos-cli-linux-amd64"
+    - chmod +x ${CI_PROJECT_DIR}/bin/alexos-cli
   artifacts:
     paths:
-      - bin/alexos-cli
+      - ${CI_PROJECT_DIR}/bin/alexos-cli
     untracked: false
     when: on_success
     expire_in: "1 day"
