@@ -30,8 +30,8 @@ variables:
 
 build-and-push:
   stage: build-and-push
-  needs:
-    - download-alexos-cli
+  # needs:
+  #   - download-alexos-cli
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
   image:
