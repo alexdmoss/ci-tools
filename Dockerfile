@@ -22,9 +22,9 @@ WORKDIR /usr/local/bin
 ADD https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 jq
 RUN chmod +x jq
 
-# Install alexos-cli
-ADD bin/alexos-cli /usr/local/bin/alexos-cli
-RUN chmod +x /usr/local/bin/alexos-cli
+# # Install alexos-cli
+# ADD bin/alexos-cli /usr/local/bin/alexos-cli
+# RUN chmod +x /usr/local/bin/alexos-cli
 
 # Install Go
 ADD https://dl.google.com/go/go1.24.3.linux-amd64.tar.gz /tmp/go1.24.3.linux-amd64.tar.gz
