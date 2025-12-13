@@ -129,4 +129,7 @@ RUN wget -q https://github.com/moby/buildkit/releases/download/${BK_VERSION}/bui
     wget -q https://raw.githubusercontent.com/moby/buildkit/master/examples/buildctl-daemonless/buildctl-daemonless.sh -O /usr/local/bin/buildctl-daemonless.sh && \
 chmod +x /usr/local/bin/buildctl-daemonless.sh
 
+# install docker credential helper for GCP
+RUN go install github.com/GoogleCloudPlatform/docker-credential-gcr/v2@latest
+
 CMD ["/bin/bash"]
