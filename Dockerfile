@@ -119,5 +119,14 @@ RUN tar -xz -f gitleaks_${GITLEAK_VERSION}_linux_x64.tar.gz gitleaks && \
 ADD bin/alexos-cli /usr/local/bin/alexos-cli
 RUN chmod +x /usr/local/bin/alexos-cli
 
+# Install buildkit (for alexos-cli build)
+ARG BK_VERSION="v0.26.2"
+RUN apt-get update && apt-get --quiet --no-install-recommends --yes install rootlesskit slirp4netns uidmap fuse-overlayfs \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+RUN wget -q https://github.com/moby/buildkit/releases/download/${BK_VERSION}/buildkit-${BK_VERSION}.linux-amd64.tar.gz -O /tmp/buildkit.tgz && \
+    tar -xzf /tmp/buildkit.tgz -C /tmp && mv /tmp/bin/* /usr/local/bin/ && \
+    wget -q https://raw.githubusercontent.com/moby/buildkit/master/examples/buildctl-daemonless/buildctl-daemonless.sh -O /usr/local/bin/buildctl-daemonless.sh && \
+chmod +x /usr/local/bin/buildctl-daemonless.sh
 
 CMD ["/bin/bash"]
