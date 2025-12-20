@@ -35,7 +35,7 @@ ENV PATH=$PATH:$GOROOT/bin
 # gcloud
 # SHA256 checksum for latest version is found on https://cloud.google.com/sdk/docs/downloads-versioned-archives#installation_instructions
 ENV PATH=$PATH:/usr/local/google-cloud-sdk/bin
-ARG GCLOUD_VERSION=549.0.1
+ARG GCLOUD_VERSION=550.0.0
 ADD https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GCLOUD_VERSION}-linux-x86_64.tar.gz /tmp/google-cloud-sdk.tar.gz
 RUN tar -C /usr/local --keep-old-files -xz -f /tmp/google-cloud-sdk.tar.gz && \
     gcloud config set --installation component_manager/disable_update_check true && \
@@ -75,7 +75,7 @@ RUN git clone --depth 1 https://github.com/tfutils/tfenv.git ~/.tfenv \
     && rm -rf ~/.tfenv/.git
 
 # Setup Kubernetes CLI - NB: stay within +/-1 of server version
-ARG KUBECTL_VERSION=1.34.1
+ARG KUBECTL_VERSION=1.35.0
 ADD https://dl.k8s.io/v${KUBECTL_VERSION}/kubernetes-client-linux-amd64.tar.gz kubernetes-client.tar.gz
 RUN tar -xz -f kubernetes-client.tar.gz --strip-components=3 kubernetes/client/bin/kubectl && rm kubernetes-client.tar.gz
 ENV USE_GKE_GCLOUD_AUTH_PLUGIN=True
@@ -91,7 +91,7 @@ ADD https://github.com/google/go-containerregistry/releases/download/${GO_CONTAI
 RUN tar -xz -f go-containerregistry.tar.gz gcrane && rm go-containerregistry.tar.gz
 
 # hugo
-ARG HUGO_VERSION=0.152.2
+ARG HUGO_VERSION=0.153.0
 ADD https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_Linux-64bit.tar.gz hugo.tar.gz
 RUN tar zxf hugo.tar.gz hugo && rm hugo.tar.gz LICENSE README.md 2>/dev/null || true
 
@@ -109,7 +109,7 @@ COPY --from=aquasec/trivy:latest /usr/local/bin/trivy /usr/local/bin/trivy
 # grype
 RUN curl -sSfL https://get.anchore.io/grype | sh -s -- -b /usr/local/bin
 # gitleaks
-ARG GITLEAK_VERSION=8.28.0
+ARG GITLEAK_VERSION=8.30.0
 ADD https://github.com/zricethezav/gitleaks/releases/download/v${GITLEAK_VERSION}/gitleaks_${GITLEAK_VERSION}_linux_x64.tar.gz gitleaks_${GITLEAK_VERSION}_linux_x64.tar.gz
 RUN tar -xz -f gitleaks_${GITLEAK_VERSION}_linux_x64.tar.gz gitleaks && \
     chmod +x gitleaks && \
@@ -120,7 +120,7 @@ ADD bin/alexos-cli /usr/local/bin/alexos-cli
 RUN chmod +x /usr/local/bin/alexos-cli
 
 # Install buildkit (for alexos-cli build)
-ARG BK_VERSION="v0.26.2"
+ARG BK_VERSION="v0.26.3"
 RUN apt-get update && apt-get --quiet --no-install-recommends --yes install rootlesskit slirp4netns uidmap fuse-overlayfs \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean

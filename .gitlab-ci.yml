@@ -3,7 +3,7 @@ stages:
 - build-and-push
 
 variables:
-  IMAGE_TAG: "546.0.1"
+  IMAGE_TAG: "550.0.0"
   ALEXOS_CLI_PROJECT_ID: "77029455"
 
 download-alexos-cli:
