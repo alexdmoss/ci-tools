@@ -35,7 +35,7 @@ ENV PATH=$PATH:$GOROOT/bin
 # gcloud
 # SHA256 checksum for latest version is found on https://cloud.google.com/sdk/docs/downloads-versioned-archives#installation_instructions
 ENV PATH=$PATH:/usr/local/google-cloud-sdk/bin
-ARG GCLOUD_VERSION=550.0.0
+ARG GCLOUD_VERSION=558.0.0
 ADD https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GCLOUD_VERSION}-linux-x86_64.tar.gz /tmp/google-cloud-sdk.tar.gz
 RUN tar -C /usr/local --keep-old-files -xz -f /tmp/google-cloud-sdk.tar.gz && \
     gcloud config set --installation component_manager/disable_update_check true && \
