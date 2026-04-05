@@ -102,12 +102,17 @@ RUN curl --silent --compressed https://downloads.snyk.io/cli/stable/snyk-linux -
 # semgrep
 RUN python3 -m pip install --no-cache-dir semgrep && \
     rm -rf ~/.cache/pip
+
 # kics
 COPY --from=checkmarx/kics:latest /app/bin/kics /usr/local/bin/kics
+
 # trivy
-COPY --from=aquasec/trivy:latest /usr/local/bin/trivy /usr/local/bin/trivy
+ARG TRIVY_VERSION=0.69.3
+COPY --from=aquasec/trivy:${TRIVY_VERSION} /usr/local/bin/trivy /usr/local/bin/trivy
+
 # grype
 RUN curl -sSfL https://get.anchore.io/grype | sh -s -- -b /usr/local/bin
+
 # gitleaks
 ARG GITLEAK_VERSION=8.30.1
 ADD https://github.com/zricethezav/gitleaks/releases/download/v${GITLEAK_VERSION}/gitleaks_${GITLEAK_VERSION}_linux_x64.tar.gz gitleaks_${GITLEAK_VERSION}_linux_x64.tar.gz
