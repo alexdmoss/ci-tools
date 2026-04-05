@@ -107,8 +107,7 @@ RUN python3 -m pip install --no-cache-dir semgrep && \
 COPY --from=checkmarx/kics:latest /app/bin/kics /usr/local/bin/kics
 
 # trivy
-ARG TRIVY_VERSION=0.69.3
-COPY --from=aquasec/trivy:${TRIVY_VERSION} /usr/local/bin/trivy /usr/local/bin/trivy
+COPY --from=aquasec/trivy:0.69.3 /usr/local/bin/trivy /usr/local/bin/trivy
 
 # grype
 RUN curl -sSfL https://get.anchore.io/grype | sh -s -- -b /usr/local/bin
