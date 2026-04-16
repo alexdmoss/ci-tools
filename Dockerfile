@@ -1,5 +1,5 @@
 ARG PLATFORM
-FROM --platform=${PLATFORM:-linux/amd64} python:3.12-slim
+FROM --platform=${PLATFORM:-linux/amd64} python:3.13-slim
 
 RUN apt-get update && apt-get --quiet --no-install-recommends --yes install \
     build-essential \
@@ -24,18 +24,16 @@ ADD https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 jq
 RUN chmod +x jq
 
 # Install Go
-ADD https://dl.google.com/go/go1.24.3.linux-amd64.tar.gz /tmp/go1.24.3.linux-amd64.tar.gz
-RUN echo "3333f6ea53afa971e9078895eaa4ac7204a8c6b5c68c10e6bc9a33e8e391bdd8 /tmp/go1.24.3.linux-amd64.tar.gz" | sha256sum -c && \
-    rm -rf /usr/local/go && \
-    tar -C /usr/local -xzf /tmp/go1.24.3.linux-amd64.tar.gz && \
-    rm /tmp/go1.24.3.linux-amd64.tar.gz
+ADD https://dl.google.com/go/go1.25.4.linux-amd64.tar.gz /tmp/go-linux-amd64.tar.gz
+RUN rm -rf /usr/local/go && \
+    tar -C /usr/local -xzf /tmp/go-linux-amd64.tar.gz && \
+    rm /tmp/go-linux-amd64.tar.gz
 ENV GOROOT=/usr/local/go
 ENV PATH=$PATH:$GOROOT/bin
 
 # gcloud
-# SHA256 checksum for latest version is found on https://cloud.google.com/sdk/docs/downloads-versioned-archives#installation_instructions
 ENV PATH=$PATH:/usr/local/google-cloud-sdk/bin
-ARG GCLOUD_VERSION=563.0.0
+ARG GCLOUD_VERSION=564.0.0
 ADD https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GCLOUD_VERSION}-linux-x86_64.tar.gz /tmp/google-cloud-sdk.tar.gz
 RUN tar -C /usr/local --keep-old-files -xz -f /tmp/google-cloud-sdk.tar.gz && \
     gcloud config set --installation component_manager/disable_update_check true && \
@@ -65,7 +63,7 @@ RUN git clone --depth 1 https://github.com/pyenv/pyenv.git ~/.pyenv && \
     echo 'eval "$(pyenv init -)"' >> ~/.bashrc
 
 # uv
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
+COPY --from=ghcr.io/astral-sh/uv:0.11.7-python3.13-trixie /usr/local/bin/uv /usr/local/bin/uvx /usr/local/bin/
 
 # tfenv
 ENV TFENV_AUTO_INSTALL=true
@@ -95,22 +93,15 @@ ARG HUGO_VERSION=0.153.0
 ADD https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_Linux-64bit.tar.gz hugo.tar.gz
 RUN tar zxf hugo.tar.gz hugo && rm hugo.tar.gz LICENSE README.md 2>/dev/null || true
 
-# snyk
-RUN curl --silent --compressed https://downloads.snyk.io/cli/stable/snyk-linux -o snyk && \
-    chmod +x ./snyk
-
 # semgrep
-RUN python3 -m pip install --no-cache-dir semgrep && \
+RUN python3 -m pip install --no-cache-dir semgrep==1.159.0 && \
     rm -rf ~/.cache/pip
 
 # kics
-COPY --from=checkmarx/kics:latest /app/bin/kics /usr/local/bin/kics
+COPY --from=checkmarx/kics:v2.1.20 /app/bin/kics /usr/local/bin/kics
 
 # trivy
 COPY --from=aquasec/trivy:0.69.3 /usr/local/bin/trivy /usr/local/bin/trivy
-
-# grype
-RUN curl -sSfL https://get.anchore.io/grype | sh -s -- -b /usr/local/bin
 
 # gitleaks
 ARG GITLEAK_VERSION=8.30.1
