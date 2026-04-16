@@ -13,8 +13,9 @@ download-alexos-cli:
     - apk add --no-cache curl jq
   script:
     - |
-      LATEST_VERSION=$(curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" "${CI_API_V4_URL}/projects/${ALEXOS_CLI_PROJECT_ID}/packages?package_name=alexos-cli&order_by=created_at&sort=desc&per_page=1" | jq -r '.[0].version')
-      curl --fail --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --output alexos-cli "${CI_API_V4_URL}/projects/${ALEXOS_CLI_PROJECT_ID}/packages/generic/alexos-cli/${ALEXOS_CLI_VERSION}/alexos-cli-linux-amd64"
+      RESPONSE=$(curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" "${CI_API_V4_URL}/projects/${ALEXOS_CLI_PROJECT_ID}/packages?package_name=alexos-cli&order_by=created_at&sort=desc&per_page=1")
+      LATEST_VERSION=$(echo "${RESPONSE}" | jq -r 'if type == "array" then .[0].version else .version end')
+      curl --fail --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --output alexos-cli "${CI_API_V4_URL}/projects/${ALEXOS_CLI_PROJECT_ID}/packages/generic/alexos-cli/${LATEST_VERSION}/alexos-cli-linux-amd64"
       echo "Using alexos-cli version: ${LATEST_VERSION}"
 
     - |
