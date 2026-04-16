@@ -33,7 +33,7 @@ build-and-push:
   needs:
     - download-alexos-cli
   variables:
-    KUBERNETES_CPU_REQUEST: "2"
+    KUBERNETES_CPU_REQUEST: "1"
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
   image:
