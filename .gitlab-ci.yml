@@ -5,6 +5,8 @@ stages:
 variables:
   IMAGE_TAG: "563.0.0"
   ALEXOS_CLI_PROJECT_ID: "77029455"
+  IMAGE_NAME: "al3xos/ci-tools"
+  BUILD_CACHE_REF: "al3xos/ci-tools:buildcache"
 
 download-alexos-cli:
   stage: artifacts
@@ -41,11 +43,21 @@ build-and-push:
     - echo "{\"auths\":{\"https://index.docker.io/v1/\":{\"auth\":\"${creds}\"}}}" > ~/.docker/config.json
   script:
     - |
-      echo "Building image [al3xos/ci-tools:${IMAGE_TAG}]"
+      set -eu
+      BUILD_STARTED_AT=$(date +%s)
+      echo "Build started at: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+      echo "Building image [${IMAGE_NAME}:${IMAGE_TAG}]"
+      echo "Using registry cache [${BUILD_CACHE_REF}]"
       buildctl-daemonless.sh build \
+        --progress=plain \
         --frontend=dockerfile.v0 \
         --local context=${CI_PROJECT_DIR} \
         --local dockerfile=${CI_PROJECT_DIR} \
         --opt filename=Dockerfile \
-        --output type=image,name=al3xos/ci-tools:${IMAGE_TAG},push=true \
-        --output type=image,name=al3xos/ci-tools:latest,push=true
+        --import-cache type=registry,ref=${BUILD_CACHE_REF} \
+        --export-cache type=registry,ref=${BUILD_CACHE_REF},mode=max \
+        --output type=image,name=${IMAGE_NAME}:${IMAGE_TAG},push=true \
+        --output type=image,name=${IMAGE_NAME}:latest,push=true
+      BUILD_FINISHED_AT=$(date +%s)
+      echo "Build finished at: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+      echo "Build duration: $((BUILD_FINISHED_AT - BUILD_STARTED_AT)) seconds"
