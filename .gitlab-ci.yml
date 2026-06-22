@@ -10,7 +10,7 @@ variables:
 
 download-alexos-cli:
   stage: artifacts
-  image: alpine:3.23
+  image: alpine:3.24
   before_script:
     - apk add --no-cache curl jq
   script:
