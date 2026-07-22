@@ -101,7 +101,7 @@ RUN python3 -m pip install --no-cache-dir semgrep==1.159.0 && \
 COPY --from=checkmarx/kics:v2.1.20 /app/bin/kics /usr/local/bin/kics
 
 # trivy
-COPY --from=aquasec/trivy:0.71.2 /usr/local/bin/trivy /usr/local/bin/trivy
+COPY --from=aquasec/trivy:0.72.0 /usr/local/bin/trivy /usr/local/bin/trivy
 
 # gitleaks
 ARG GITLEAK_VERSION=8.30.1
