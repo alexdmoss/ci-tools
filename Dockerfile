@@ -83,6 +83,11 @@ ARG KUSTOMIZE_VERSION=5.7.1
 ADD "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_linux_amd64.tar.gz" kustomize.tar.gz
 RUN tar -xz -f kustomize.tar.gz && rm kustomize.tar.gz
 
+# helm
+ARG HELM_VERSION=4.2.3
+ADD https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz helm.tar.gz
+RUN tar -xz -f helm.tar.gz linux-amd64/helm && mv linux-amd64/helm /usr/local/bin/helm && rm -rf helm.tar.gz linux-amd64
+
 # Setup gcrane
 ARG GO_CONTAINERREGISTRY_VERSION=v0.21.3
 ADD https://github.com/google/go-containerregistry/releases/download/${GO_CONTAINERREGISTRY_VERSION}/go-containerregistry_Linux_x86_64.tar.gz go-containerregistry.tar.gz
