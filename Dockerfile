@@ -1,5 +1,5 @@
 ARG PLATFORM
-FROM --platform=${PLATFORM:-linux/amd64} python:3.13-slim
+FROM --platform=${PLATFORM:-linux/amd64} python:3.13-slim@sha256:d98cc29d3266e535dd9da1099688d9cb3ca4753813571e071763d17725460962
 
 RUN apt-get update && apt-get --quiet --no-install-recommends --yes install \
     build-essential \
@@ -63,7 +63,7 @@ RUN git clone --depth 1 https://github.com/pyenv/pyenv.git ~/.pyenv && \
     echo 'eval "$(pyenv init -)"' >> ~/.bashrc
 
 # uv
-COPY --from=ghcr.io/astral-sh/uv:0.11.7-python3.13-trixie /usr/local/bin/uv /usr/local/bin/uvx /usr/local/bin/
+COPY --from=ghcr.io/astral-sh/uv:0.11.7-python3.13-trixie@sha256:929560df6a6231d0509739319bc214aaa1e78838ce1f779b1faeb877c23a50d8 /usr/local/bin/uv /usr/local/bin/uvx /usr/local/bin/
 
 # tfenv
 ENV TFENV_AUTO_INSTALL=true
@@ -103,10 +103,10 @@ RUN python3 -m pip install --no-cache-dir semgrep==1.159.0 && \
     rm -rf ~/.cache/pip
 
 # kics
-COPY --from=checkmarx/kics:v2.1.20 /app/bin/kics /usr/local/bin/kics
+COPY --from=checkmarx/kics:v2.1.20@sha256:3e5a268eb8adda2e5a483c9359ddfc4cd520ab856a7076dc0b1d8784a37e2602 /app/bin/kics /usr/local/bin/kics
 
 # trivy
-COPY --from=aquasec/trivy:0.74.0 /usr/local/bin/trivy /usr/local/bin/trivy
+COPY --from=aquasec/trivy:0.74.0@sha256:62b1e65e8869bc4b4c6aa4fa2b21595256c7c2f6018a9d9ad61caf87187c1969 /usr/local/bin/trivy /usr/local/bin/trivy
 
 # gitleaks
 ARG GITLEAK_VERSION=8.30.1

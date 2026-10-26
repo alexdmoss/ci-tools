@@ -10,7 +10,7 @@ variables:
 
 download-alexos-cli:
   stage: artifacts
-  image: alpine:3.24
+  image: alpine:3.24@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a
   before_script:
     - apk add --no-cache curl jq
   script:
@@ -37,7 +37,7 @@ build-and-push:
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
   image:
-    name: moby/buildkit:rootless
+    name: moby/buildkit:rootless@sha256:f68752a5a94acfcdad2d07867b7075601a421638e17fc5f28efc1c814d0c4f89
     entrypoint: [""]
   before_script:
     - mkdir -p ~/.docker
