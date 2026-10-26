@@ -3,7 +3,6 @@ stages:
 - build-and-push
 
 variables:
-  IMAGE_TAG: "563.0.0"
   ALEXOS_CLI_PROJECT_ID: "77029455"
   IMAGE_NAME: "al3xos/ci-tools"
   BUILD_CACHE_REF: "al3xos/ci-tools:buildcache"
@@ -46,6 +45,12 @@ build-and-push:
   script:
     - |
       set -eu
+      # The image is tagged with the gcloud version it contains
+      IMAGE_TAG=$(sed -n 's/^ARG GCLOUD_VERSION=//p' ${CI_PROJECT_DIR}/Dockerfile)
+      if [ -z "${IMAGE_TAG}" ]; then
+        echo "Could not read GCLOUD_VERSION from the Dockerfile"
+        exit 1
+      fi
       BUILD_STARTED_AT=$(date +%s)
       echo "Build started at: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
       echo "Building image [${IMAGE_NAME}:${IMAGE_TAG}]"
@@ -57,9 +62,8 @@ build-and-push:
         --local dockerfile=${CI_PROJECT_DIR} \
         --opt filename=Dockerfile \
         --import-cache type=registry,ref=${BUILD_CACHE_REF} \
-        --export-cache type=registry,ref=${BUILD_CACHE_REF},mode=max \
-        --output type=image,name=${IMAGE_NAME}:${IMAGE_TAG},push=true \
-        --output type=image,name=${IMAGE_NAME}:latest,push=true
+        --export-cache type=registry,ref=${BUILD_CACHE_REF},mode=max,compression=zstd \
+        --output "type=image,\"name=${IMAGE_NAME}:${IMAGE_TAG},${IMAGE_NAME}:latest\",push=true,compression=zstd,oci-mediatypes=true"
       BUILD_FINISHED_AT=$(date +%s)
       echo "Build finished at: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
       echo "Build duration: $((BUILD_FINISHED_AT - BUILD_STARTED_AT)) seconds"

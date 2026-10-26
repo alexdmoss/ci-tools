@@ -1,9 +1,15 @@
 ARG PLATFORM
 FROM --platform=${PLATFORM:-linux/amd64} python:3.13-slim@sha256:d98cc29d3266e535dd9da1099688d9cb3ca4753813571e071763d17725460962
 
+# Layers are ordered from least to most frequently changing, so a version bump
+# only rebuilds the layers after it and everything above comes from the cache.
+# Unpinned installs (apt, pip, git clones) refresh when the base digest changes.
+
+# apt packages, including the buildkit dependencies (for alexos-cli build)
 RUN apt-get update && apt-get --quiet --no-install-recommends --yes install \
     build-essential \
     curl \
+    fuse-overlayfs \
     gettext-base \
     git \
     gnupg2 \
@@ -11,17 +17,43 @@ RUN apt-get update && apt-get --quiet --no-install-recommends --yes install \
     make \
     openssh-client \
     procps \
+    rootlesskit \
     shellcheck \
+    slirp4netns \
     tar \
+    uidmap \
     unzip \
     wget \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# docker
+RUN curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg \
+    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(awk -F '=' '/VERSION_CODENAME=/ {print $2}' /etc/os-release) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null \
+    && apt-get update && apt-get --quiet --no-install-recommends --yes install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# pipenv and yq
+RUN pip install --upgrade pip && pip --quiet --no-cache-dir install pipenv yamllint yq && \
+    rm -rf ~/.cache/pip
+
+# pyenv
+RUN git clone --depth 1 https://github.com/pyenv/pyenv.git ~/.pyenv && \
+    rm -rf ~/.pyenv/.git && \
+    echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc && \
+    echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc && \
+    echo 'eval "$(pyenv init -)"' >> ~/.bashrc
+
+# tfenv
+ENV TFENV_AUTO_INSTALL=true
+RUN git clone --depth 1 https://github.com/tfutils/tfenv.git ~/.tfenv \
+    && ln -s ~/.tfenv/bin/* /usr/local/bin \
+    && mkdir ~/.tfenv/versions \
+    && rm -rf ~/.tfenv/.git
 
 # put everything custom in here - simplifies some of the bash
 WORKDIR /usr/local/bin
-
-ADD https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 jq
-RUN chmod +x jq
 
 # Install Go
 ADD https://dl.google.com/go/go1.25.4.linux-amd64.tar.gz /tmp/go-linux-amd64.tar.gz
@@ -31,7 +63,7 @@ RUN rm -rf /usr/local/go && \
 ENV GOROOT=/usr/local/go
 ENV PATH=$PATH:$GOROOT/bin
 
-# gcloud
+# gcloud (the largest layer). GCLOUD_VERSION is also the image tag.
 ENV PATH=$PATH:/usr/local/google-cloud-sdk/bin
 ARG GCLOUD_VERSION=564.0.0
 ADD https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GCLOUD_VERSION}-linux-x86_64.tar.gz /tmp/google-cloud-sdk.tar.gz
@@ -42,35 +74,22 @@ RUN tar -C /usr/local --keep-old-files -xz -f /tmp/google-cloud-sdk.tar.gz && \
     rm -f /tmp/google-cloud-sdk.tar.gz && \
     rm -rf /usr/local/google-cloud-sdk/.install/.backup && \
     find /usr/local/google-cloud-sdk -type d -name __pycache__ -exec rm -r {} \+
-
-# pipenv and yq
-RUN pip install --upgrade pip && pip --quiet --no-cache-dir install pipenv yamllint yq && \
-    rm -rf ~/.cache/pip
-
-# docker
-RUN curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg \
-    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(awk -F '=' '/VERSION_CODENAME=/ {print $2}' /etc/os-release) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null \
-    && apt-get update && apt-get --quiet --no-install-recommends --yes install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
 RUN gcloud auth configure-docker
 
-# pyenv
-RUN git clone --depth 1 https://github.com/pyenv/pyenv.git ~/.pyenv && \
-    rm -rf ~/.pyenv/.git && \
-    echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc && \
-    echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc && \
-    echo 'eval "$(pyenv init -)"' >> ~/.bashrc
+# semgrep
+RUN python3 -m pip install --no-cache-dir semgrep==1.159.0 && \
+    rm -rf ~/.cache/pip
 
-# uv
-COPY --from=ghcr.io/astral-sh/uv:0.11.7-python3.13-trixie@sha256:929560df6a6231d0509739319bc214aaa1e78838ce1f779b1faeb877c23a50d8 /usr/local/bin/uv /usr/local/bin/uvx /usr/local/bin/
+# Small single-binary tools from here down
 
-# tfenv
-ENV TFENV_AUTO_INSTALL=true
-RUN git clone --depth 1 https://github.com/tfutils/tfenv.git ~/.tfenv \
-    && ln -s ~/.tfenv/bin/* /usr/local/bin \
-    && mkdir ~/.tfenv/versions \
-    && rm -rf ~/.tfenv/.git
+ADD https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 jq
+RUN chmod +x jq
+
+# install docker credential helper for GCP (pinned: with caching, @latest would never update)
+ARG DOCKER_CREDENTIAL_GCR_VERSION=v2.2.1
+RUN go install github.com/GoogleCloudPlatform/docker-credential-gcr/v2@${DOCKER_CREDENTIAL_GCR_VERSION} && \
+    mv $HOME/go/bin/docker-credential-gcr /usr/local/bin/docker-credential-gcr && \
+    go clean -modcache
 
 # Setup Kubernetes CLI - NB: stay within +/-1 of server version
 ARG KUBECTL_VERSION=1.35.3
@@ -98,16 +117,6 @@ ARG HUGO_VERSION=0.153.0
 ADD https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_Linux-64bit.tar.gz hugo.tar.gz
 RUN tar zxf hugo.tar.gz hugo && rm hugo.tar.gz LICENSE README.md 2>/dev/null || true
 
-# semgrep
-RUN python3 -m pip install --no-cache-dir semgrep==1.159.0 && \
-    rm -rf ~/.cache/pip
-
-# kics
-COPY --from=checkmarx/kics:v2.1.20@sha256:3e5a268eb8adda2e5a483c9359ddfc4cd520ab856a7076dc0b1d8784a37e2602 /app/bin/kics /usr/local/bin/kics
-
-# trivy
-COPY --from=aquasec/trivy:0.74.0@sha256:62b1e65e8869bc4b4c6aa4fa2b21595256c7c2f6018a9d9ad61caf87187c1969 /usr/local/bin/trivy /usr/local/bin/trivy
-
 # gitleaks
 ARG GITLEAK_VERSION=8.30.1
 ADD https://github.com/zricethezav/gitleaks/releases/download/v${GITLEAK_VERSION}/gitleaks_${GITLEAK_VERSION}_linux_x64.tar.gz gitleaks_${GITLEAK_VERSION}_linux_x64.tar.gz
@@ -115,22 +124,24 @@ RUN tar -xz -f gitleaks_${GITLEAK_VERSION}_linux_x64.tar.gz gitleaks && \
     chmod +x gitleaks && \
     rm gitleaks_${GITLEAK_VERSION}_linux_x64.tar.gz
 
-# Install alexos-cli
-ADD bin/alexos-cli /usr/local/bin/alexos-cli
-RUN chmod +x /usr/local/bin/alexos-cli
-
 # Install buildkit (for alexos-cli build)
 ARG BK_VERSION="v0.29.0"
-RUN apt-get update && apt-get --quiet --no-install-recommends --yes install rootlesskit slirp4netns uidmap fuse-overlayfs \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
 RUN wget -q https://github.com/moby/buildkit/releases/download/${BK_VERSION}/buildkit-${BK_VERSION}.linux-amd64.tar.gz -O /tmp/buildkit.tgz && \
     tar -xzf /tmp/buildkit.tgz -C /tmp && mv /tmp/bin/* /usr/local/bin/ && \
     wget -q https://raw.githubusercontent.com/moby/buildkit/master/examples/buildctl-daemonless/buildctl-daemonless.sh -O /usr/local/bin/buildctl-daemonless.sh && \
 chmod +x /usr/local/bin/buildctl-daemonless.sh
 
-# install docker credential helper for GCP
-RUN go install github.com/GoogleCloudPlatform/docker-credential-gcr/v2@latest && \
-    mv $HOME/go/bin/docker-credential-gcr /usr/local/bin/docker-credential-gcr
+# uv
+COPY --from=ghcr.io/astral-sh/uv:0.11.7-python3.13-trixie@sha256:929560df6a6231d0509739319bc214aaa1e78838ce1f779b1faeb877c23a50d8 /usr/local/bin/uv /usr/local/bin/uvx /usr/local/bin/
+
+# kics
+COPY --from=checkmarx/kics:v2.1.20@sha256:3e5a268eb8adda2e5a483c9359ddfc4cd520ab856a7076dc0b1d8784a37e2602 /app/bin/kics /usr/local/bin/kics
+
+# trivy
+COPY --from=aquasec/trivy:0.74.0@sha256:62b1e65e8869bc4b4c6aa4fa2b21595256c7c2f6018a9d9ad61caf87187c1969 /usr/local/bin/trivy /usr/local/bin/trivy
+
+# Install alexos-cli (last: the latest release is downloaded on every pipeline)
+ADD bin/alexos-cli /usr/local/bin/alexos-cli
+RUN chmod +x /usr/local/bin/alexos-cli
 
 CMD ["/bin/bash"]
