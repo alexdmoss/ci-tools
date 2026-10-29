@@ -1,5 +1,14 @@
+workflow:
+  rules:
+    # Avoid duplicate pipelines: the branch pipeline already runs the jobs,
+    # so don't also create a merge request pipeline.
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: never
+    - if: $CI_COMMIT_BRANCH
+
 stages:
 - artifacts
+- validate
 - build-and-push
 
 default:
@@ -30,6 +39,28 @@ download-alexos-cli:
     untracked: false
     when: on_success
     expire_in: "1 day"
+
+# Branches: build the whole image (including the tool version check at the end
+# of the Dockerfile) without pushing, so a bad version bump fails here, not on main.
+# Reads the registry cache but doesn't write it.
+validate:
+  stage: validate
+  needs:
+    - download-alexos-cli
+  rules:
+    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+  image:
+    name: moby/buildkit:rootless@sha256:f68752a5a94acfcdad2d07867b7075601a421638e17fc5f28efc1c814d0c4f89
+    entrypoint: [""]
+  script:
+    - |
+      buildctl-daemonless.sh build \
+        --progress=plain \
+        --frontend=dockerfile.v0 \
+        --local context=${CI_PROJECT_DIR} \
+        --local dockerfile=${CI_PROJECT_DIR} \
+        --opt filename=Dockerfile \
+        --import-cache type=registry,ref=${BUILD_CACHE_REF}
 
 build-and-push:
   stage: build-and-push

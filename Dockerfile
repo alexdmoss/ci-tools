@@ -55,17 +55,21 @@ RUN git clone --depth 1 https://github.com/tfutils/tfenv.git ~/.tfenv \
 # put everything custom in here - simplifies some of the bash
 WORKDIR /usr/local/bin
 
-# Install Go
-ADD https://dl.google.com/go/go1.25.4.linux-amd64.tar.gz /tmp/go-linux-amd64.tar.gz
+# Go: match the newest go.mod directive in use, so Go jobs don't download a toolchain first
+# renovate: datasource=golang-version depName=go
+ARG GO_VERSION=1.27.3
+ADD https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz /tmp/go-linux-amd64.tar.gz
 RUN rm -rf /usr/local/go && \
     tar -C /usr/local -xzf /tmp/go-linux-amd64.tar.gz && \
     rm /tmp/go-linux-amd64.tar.gz
 ENV GOROOT=/usr/local/go
 ENV PATH=$PATH:$GOROOT/bin
 
-# gcloud (the largest layer). GCLOUD_VERSION is also the image tag.
+# gcloud (the largest layer). GCLOUD_VERSION is also the image tag. Tracked via
+# the Docker Hub image, which carries the same version numbers plus release timestamps
 ENV PATH=$PATH:/usr/local/google-cloud-sdk/bin
-ARG GCLOUD_VERSION=564.0.0
+# renovate: datasource=docker depName=google/cloud-sdk
+ARG GCLOUD_VERSION=590.0.0
 ADD https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GCLOUD_VERSION}-linux-x86_64.tar.gz /tmp/google-cloud-sdk.tar.gz
 RUN tar -C /usr/local --keep-old-files -xz -f /tmp/google-cloud-sdk.tar.gz && \
     gcloud config set --installation component_manager/disable_update_check true && \
@@ -77,62 +81,80 @@ RUN tar -C /usr/local --keep-old-files -xz -f /tmp/google-cloud-sdk.tar.gz && \
 RUN gcloud auth configure-docker
 
 # semgrep
-RUN python3 -m pip install --no-cache-dir semgrep==1.159.0 && \
+# renovate: datasource=pypi depName=semgrep
+ARG SEMGREP_VERSION=1.182.1
+RUN python3 -m pip install --no-cache-dir semgrep==${SEMGREP_VERSION} && \
     rm -rf ~/.cache/pip
 
 # Small single-binary tools from here down
 
-ADD https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 jq
+# renovate: datasource=github-releases depName=jqlang/jq versioning=regex:^jq-(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)$
+ARG JQ_VERSION=jq-1.8.2
+ADD https://github.com/jqlang/jq/releases/download/${JQ_VERSION}/jq-linux-amd64 jq
 RUN chmod +x jq
 
 # install docker credential helper for GCP (pinned: with caching, @latest would never update)
+# renovate: datasource=go depName=github.com/GoogleCloudPlatform/docker-credential-gcr/v2
 ARG DOCKER_CREDENTIAL_GCR_VERSION=v2.2.1
 RUN go install github.com/GoogleCloudPlatform/docker-credential-gcr/v2@${DOCKER_CREDENTIAL_GCR_VERSION} && \
     mv $HOME/go/bin/docker-credential-gcr /usr/local/bin/docker-credential-gcr && \
     go clean -modcache
 
-# Setup Kubernetes CLI - NB: stay within +/-1 of server version
-ARG KUBECTL_VERSION=1.35.3
-ADD https://dl.k8s.io/v${KUBECTL_VERSION}/kubernetes-client-linux-amd64.tar.gz kubernetes-client.tar.gz
+# Setup Kubernetes CLI - NB: stay within +/-1 of server version (GKE 1.36 on 29 Oct 2026)
+# renovate: datasource=github-releases depName=kubernetes/kubernetes
+ARG KUBECTL_VERSION=v1.36.5
+ADD https://dl.k8s.io/${KUBECTL_VERSION}/kubernetes-client-linux-amd64.tar.gz kubernetes-client.tar.gz
 RUN tar -xz -f kubernetes-client.tar.gz --strip-components=3 kubernetes/client/bin/kubectl && rm kubernetes-client.tar.gz
 ENV USE_GKE_GCLOUD_AUTH_PLUGIN=True
 
-# kustomize
-ARG KUSTOMIZE_VERSION=5.7.1
-ADD "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_linux_amd64.tar.gz" kustomize.tar.gz
+# kustomize (Go module versions: the GitHub tags are kustomize/vX, which the comment convention can't strip)
+# renovate: datasource=go depName=sigs.k8s.io/kustomize/kustomize/v5
+ARG KUSTOMIZE_VERSION=v5.8.3
+ADD "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz" kustomize.tar.gz
 RUN tar -xz -f kustomize.tar.gz && rm kustomize.tar.gz
 
 # helm
-ARG HELM_VERSION=4.2.3
-ADD https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz helm.tar.gz
+# renovate: datasource=github-releases depName=helm/helm
+ARG HELM_VERSION=v4.3.1
+ADD https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz helm.tar.gz
 RUN tar -xz -f helm.tar.gz linux-amd64/helm && mv linux-amd64/helm /usr/local/bin/helm && rm -rf helm.tar.gz linux-amd64
 
 # Setup gcrane
-ARG GO_CONTAINERREGISTRY_VERSION=v0.21.3
+# renovate: datasource=github-releases depName=google/go-containerregistry
+ARG GO_CONTAINERREGISTRY_VERSION=v0.22.1
 ADD https://github.com/google/go-containerregistry/releases/download/${GO_CONTAINERREGISTRY_VERSION}/go-containerregistry_Linux_x86_64.tar.gz go-containerregistry.tar.gz
 RUN tar -xz -f go-containerregistry.tar.gz gcrane && rm go-containerregistry.tar.gz
 
-# hugo
-ARG HUGO_VERSION=0.153.0
-ADD https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_Linux-64bit.tar.gz hugo.tar.gz
+# hugo. NB: held at 0.153 until alexos.dev has a local gist shortcode (Hugo >= 0.156 dropped the built-in one)
+# renovate: datasource=github-releases depName=gohugoio/hugo
+ARG HUGO_VERSION=v0.153.0
+ADD https://github.com/gohugoio/hugo/releases/download/${HUGO_VERSION}/hugo_extended_${HUGO_VERSION#v}_Linux-64bit.tar.gz hugo.tar.gz
 RUN tar zxf hugo.tar.gz hugo && rm hugo.tar.gz LICENSE README.md 2>/dev/null || true
 
 # gitleaks
-ARG GITLEAK_VERSION=8.30.1
-ADD https://github.com/zricethezav/gitleaks/releases/download/v${GITLEAK_VERSION}/gitleaks_${GITLEAK_VERSION}_linux_x64.tar.gz gitleaks_${GITLEAK_VERSION}_linux_x64.tar.gz
-RUN tar -xz -f gitleaks_${GITLEAK_VERSION}_linux_x64.tar.gz gitleaks && \
+# renovate: datasource=github-releases depName=gitleaks/gitleaks
+ARG GITLEAKS_VERSION=v8.30.1
+ADD https://github.com/gitleaks/gitleaks/releases/download/${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION#v}_linux_x64.tar.gz gitleaks.tar.gz
+RUN tar -xz -f gitleaks.tar.gz gitleaks && \
     chmod +x gitleaks && \
-    rm gitleaks_${GITLEAK_VERSION}_linux_x64.tar.gz
+    rm gitleaks.tar.gz
 
-# Install buildkit (for alexos-cli build)
-ARG BK_VERSION="v0.29.0"
+# kubeconform (alexos-cli reference/scripts/validate-manifests.sh)
+# renovate: datasource=github-releases depName=yannh/kubeconform
+ARG KUBECONFORM_VERSION=v0.8.0
+ADD https://github.com/yannh/kubeconform/releases/download/${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz kubeconform.tar.gz
+RUN tar -xz -f kubeconform.tar.gz kubeconform && rm kubeconform.tar.gz
+
+# Install buildkit (for alexos-cli build); the daemonless script comes from the same tag
+# renovate: datasource=github-releases depName=moby/buildkit
+ARG BK_VERSION=v0.34.1
 RUN wget -q https://github.com/moby/buildkit/releases/download/${BK_VERSION}/buildkit-${BK_VERSION}.linux-amd64.tar.gz -O /tmp/buildkit.tgz && \
-    tar -xzf /tmp/buildkit.tgz -C /tmp && mv /tmp/bin/* /usr/local/bin/ && \
-    wget -q https://raw.githubusercontent.com/moby/buildkit/master/examples/buildctl-daemonless/buildctl-daemonless.sh -O /usr/local/bin/buildctl-daemonless.sh && \
-chmod +x /usr/local/bin/buildctl-daemonless.sh
+    tar -xzf /tmp/buildkit.tgz -C /tmp && mv /tmp/bin/* /usr/local/bin/ && rm -rf /tmp/buildkit.tgz /tmp/bin && \
+    wget -q https://raw.githubusercontent.com/moby/buildkit/${BK_VERSION}/examples/buildctl-daemonless/buildctl-daemonless.sh -O /usr/local/bin/buildctl-daemonless.sh && \
+    chmod +x /usr/local/bin/buildctl-daemonless.sh
 
-# uv
-COPY --from=ghcr.io/astral-sh/uv:0.11.7-python3.13-trixie@sha256:929560df6a6231d0509739319bc214aaa1e78838ce1f779b1faeb877c23a50d8 /usr/local/bin/uv /usr/local/bin/uvx /usr/local/bin/
+# uv (the plain image: just the two binaries)
+COPY --from=ghcr.io/astral-sh/uv:0.13.4@sha256:9f130421e930bfbdc563c00740466603f8723158e90297d07957c2294640262b /uv /uvx /usr/local/bin/
 
 # kics
 COPY --from=checkmarx/kics:v2.2.0@sha256:ef29dbac14b046b1ef65f3280646112e927a61781c5f01bca1aeb723e0b96003 /app/bin/kics /usr/local/bin/kics
@@ -143,5 +165,13 @@ COPY --from=aquasec/trivy:0.76.1@sha256:790fd66d1697395d8693d1acaa1ea702406a20f1
 # Install alexos-cli (last: the latest release is downloaded on every pipeline)
 ADD bin/alexos-cli /usr/local/bin/alexos-cli
 RUN chmod +x /usr/local/bin/alexos-cli
+
+# Fail the build if any tool is missing or won't run (a bad download URL after a bump)
+RUN set -e; for cmd in "go version" "gcloud --version" "semgrep --version" "jq --version" \
+      "docker-credential-gcr version" "kubectl version --client" "kustomize version" "helm version" \
+      "gcrane version" "hugo version" "gitleaks version" "kubeconform -v" "buildctl --version" \
+      "uv --version" "kics version" "trivy --version" "docker --version" "yq --version" "pipenv --version"; do \
+      echo "-> ${cmd}"; ${cmd} > /tmp/out 2>&1 || { cat /tmp/out; exit 1; }; head -1 /tmp/out; \
+    done; rm /tmp/out
 
 CMD ["/bin/bash"]
