@@ -1,4 +1,11 @@
 ARG PLATFORM
+# uv: ghcr.io gives Renovate no release timestamps, so the version is tracked via
+# GitHub releases (for the 3-day age gate) and the image is pulled by that tag
+# renovate: datasource=github-releases depName=astral-sh/uv
+ARG UV_VERSION=0.13.5
+
+FROM ghcr.io/astral-sh/uv:${UV_VERSION} AS uv
+
 FROM --platform=${PLATFORM:-linux/amd64} python:3.13-slim@sha256:d98cc29d3266e535dd9da1099688d9cb3ca4753813571e071763d17725460962
 
 # Layers are ordered from least to most frequently changing, so a version bump
@@ -153,8 +160,8 @@ RUN wget -q https://github.com/moby/buildkit/releases/download/${BK_VERSION}/bui
     wget -q https://raw.githubusercontent.com/moby/buildkit/${BK_VERSION}/examples/buildctl-daemonless/buildctl-daemonless.sh -O /usr/local/bin/buildctl-daemonless.sh && \
     chmod +x /usr/local/bin/buildctl-daemonless.sh
 
-# uv (the plain image: just the two binaries)
-COPY --from=ghcr.io/astral-sh/uv:0.13.4@sha256:9f130421e930bfbdc563c00740466603f8723158e90297d07957c2294640262b /uv /uvx /usr/local/bin/
+# uv (version at the top; the plain image holds just the two binaries)
+COPY --from=uv /uv /uvx /usr/local/bin/
 
 # kics
 COPY --from=checkmarx/kics:v2.2.0@sha256:ef29dbac14b046b1ef65f3280646112e927a61781c5f01bca1aeb723e0b96003 /app/bin/kics /usr/local/bin/kics
