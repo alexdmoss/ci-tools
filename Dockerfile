@@ -2,7 +2,7 @@ ARG PLATFORM
 # uv: ghcr.io gives Renovate no release timestamps, so the version is tracked via
 # GitHub releases (for the 3-day age gate) and the image is pulled by that tag
 # renovate: datasource=github-releases depName=astral-sh/uv
-ARG UV_VERSION=0.13.5
+ARG UV_VERSION=0.13.6
 
 FROM ghcr.io/astral-sh/uv:${UV_VERSION} AS uv
 
