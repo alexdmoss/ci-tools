@@ -109,7 +109,7 @@ RUN go install github.com/GoogleCloudPlatform/docker-credential-gcr/v2@${DOCKER_
 
 # Setup Kubernetes CLI - NB: stay within +/-1 of server version (GKE 1.36 on 29 Oct 2026)
 # renovate: datasource=github-releases depName=kubernetes/kubernetes
-ARG KUBECTL_VERSION=v1.37.1
+ARG KUBECTL_VERSION=v1.37.2
 ADD https://dl.k8s.io/${KUBECTL_VERSION}/kubernetes-client-linux-amd64.tar.gz kubernetes-client.tar.gz
 RUN tar -xz -f kubernetes-client.tar.gz --strip-components=3 kubernetes/client/bin/kubectl && rm kubernetes-client.tar.gz
 ENV USE_GKE_GCLOUD_AUTH_PLUGIN=True
