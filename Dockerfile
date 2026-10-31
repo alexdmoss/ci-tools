@@ -134,7 +134,7 @@ RUN tar -xz -f go-containerregistry.tar.gz gcrane && rm go-containerregistry.tar
 
 # hugo. NB: held at 0.153 until alexos.dev has a local gist shortcode (Hugo >= 0.156 dropped the built-in one)
 # renovate: datasource=github-releases depName=gohugoio/hugo
-ARG HUGO_VERSION=v0.168.0
+ARG HUGO_VERSION=v0.169.0
 ADD https://github.com/gohugoio/hugo/releases/download/${HUGO_VERSION}/hugo_extended_${HUGO_VERSION#v}_Linux-64bit.tar.gz hugo.tar.gz
 RUN tar zxf hugo.tar.gz hugo && rm hugo.tar.gz LICENSE README.md 2>/dev/null || true
 
