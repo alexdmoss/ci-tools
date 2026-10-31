@@ -1,0 +1,12 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["local>alexos-platform/renovate:automerge"],
+  "packageRules": [
+    {
+      "description": "kubectl must stay within +/-1 minor of the GKE server version, so minors are checked against the cluster by hand. Patches still automerge",
+      "matchDepNames": ["kubernetes/kubernetes"],
+      "matchUpdateTypes": ["minor"],
+      "automerge": false
+    }
+  ]
+}
