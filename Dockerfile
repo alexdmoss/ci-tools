@@ -6,7 +6,7 @@ ARG UV_VERSION=0.13.6
 
 FROM ghcr.io/astral-sh/uv:${UV_VERSION} AS uv
 
-FROM --platform=${PLATFORM:-linux/amd64} python:3.13-slim@sha256:2d44738ebf4ce5f63b9d9ea871e9c7cfdc0426f7b0c97cac915fd88ded1d86bb
+FROM --platform=${PLATFORM:-linux/amd64} python:3.13-slim@sha256:ae14d4ce8771606477a81446e7ef429edd6762305fc50c84507c1041fa8285d1
 
 # Layers are ordered from least to most frequently changing, so a version bump
 # only rebuilds the layers after it and everything above comes from the cache.
