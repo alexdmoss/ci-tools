@@ -6,7 +6,7 @@ ARG UV_VERSION=0.13.6
 
 FROM ghcr.io/astral-sh/uv:${UV_VERSION} AS uv
 
-FROM --platform=${PLATFORM:-linux/amd64} python:3.13-slim@sha256:ae14d4ce8771606477a81446e7ef429edd6762305fc50c84507c1041fa8285d1
+FROM --platform=${PLATFORM:-linux/amd64} python:3.13-slim@sha256:e48f59cdba69a3cbd9ed2cf0f348d90d45a8d350d98134cf1070bc106ee9ed90
 
 # Layers are ordered from least to most frequently changing, so a version bump
 # only rebuilds the layers after it and everything above comes from the cache.
@@ -167,7 +167,7 @@ COPY --from=uv /uv /uvx /usr/local/bin/
 COPY --from=checkmarx/kics:v2.2.0@sha256:ef29dbac14b046b1ef65f3280646112e927a61781c5f01bca1aeb723e0b96003 /app/bin/kics /usr/local/bin/kics
 
 # trivy
-COPY --from=aquasec/trivy:0.76.1@sha256:790fd66d1697395d8693d1acaa1ea702406a20f109b6fc7bac8db623eca6c06c /usr/local/bin/trivy /usr/local/bin/trivy
+COPY --from=aquasec/trivy:0.76.2@sha256:8f6bb947dbc528902e11f2f5be52f7b519f6a39d5d148f41166f2040499768fb /usr/local/bin/trivy /usr/local/bin/trivy
 
 # Install alexos-cli (last: the latest release is downloaded on every pipeline)
 ADD bin/alexos-cli /usr/local/bin/alexos-cli
