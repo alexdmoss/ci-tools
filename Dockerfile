@@ -1,3 +1,5 @@
+# checkov:skip=CKV_DOCKER_4:ADD <url> is deliberate: each download is a Renovate-tracked version
+# checkov:skip=CKV_DOCKER_3:runs as root on purpose: CI jobs install tools and write to system paths
 ARG PLATFORM
 # uv: ghcr.io gives Renovate no release timestamps, so the version is tracked via
 # GitHub releases (for the 3-day age gate) and the image is pulled by that tag
