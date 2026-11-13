@@ -66,7 +66,7 @@ WORKDIR /usr/local/bin
 
 # Go: match the newest go.mod directive in use, so Go jobs don't download a toolchain first
 # renovate: datasource=golang-version depName=go
-ARG GO_VERSION=1.27.3
+ARG GO_VERSION=1.27.4
 ADD https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz /tmp/go-linux-amd64.tar.gz
 RUN rm -rf /usr/local/go && \
     tar -C /usr/local -xzf /tmp/go-linux-amd64.tar.gz && \
