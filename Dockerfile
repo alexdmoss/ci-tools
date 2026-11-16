@@ -124,7 +124,7 @@ RUN tar -xz -f kustomize.tar.gz && rm kustomize.tar.gz
 
 # helm
 # renovate: datasource=github-releases depName=helm/helm
-ARG HELM_VERSION=v4.3.1
+ARG HELM_VERSION=v4.3.2
 ADD https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz helm.tar.gz
 RUN tar -xz -f helm.tar.gz linux-amd64/helm && mv linux-amd64/helm /usr/local/bin/helm && rm -rf helm.tar.gz linux-amd64
 
