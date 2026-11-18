@@ -166,7 +166,7 @@ RUN wget -q https://github.com/moby/buildkit/releases/download/${BK_VERSION}/bui
 COPY --from=uv /uv /uvx /usr/local/bin/
 
 # kics
-COPY --from=checkmarx/kics:v2.2.0@sha256:ef29dbac14b046b1ef65f3280646112e927a61781c5f01bca1aeb723e0b96003 /app/bin/kics /usr/local/bin/kics
+COPY --from=checkmarx/kics:v2.2.1@sha256:49ccc54b6ae7f5d5fc95e96f8f95c18c57f3bba047ab611a03d80792bdff6757 /app/bin/kics /usr/local/bin/kics
 
 # trivy
 COPY --from=aquasec/trivy:0.76.2@sha256:8f6bb947dbc528902e11f2f5be52f7b519f6a39d5d148f41166f2040499768fb /usr/local/bin/trivy /usr/local/bin/trivy
