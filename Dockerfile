@@ -104,7 +104,7 @@ RUN chmod +x jq
 
 # install docker credential helper for GCP (pinned: with caching, @latest would never update)
 # renovate: datasource=go depName=github.com/GoogleCloudPlatform/docker-credential-gcr/v2
-ARG DOCKER_CREDENTIAL_GCR_VERSION=v2.2.1
+ARG DOCKER_CREDENTIAL_GCR_VERSION=v2.2.2
 RUN go install github.com/GoogleCloudPlatform/docker-credential-gcr/v2@${DOCKER_CREDENTIAL_GCR_VERSION} && \
     mv $HOME/go/bin/docker-credential-gcr /usr/local/bin/docker-credential-gcr && \
     go clean -modcache
