@@ -91,7 +91,7 @@ RUN gcloud auth configure-docker
 
 # semgrep
 # renovate: datasource=pypi depName=semgrep
-ARG SEMGREP_VERSION=1.185.0
+ARG SEMGREP_VERSION=1.186.0
 RUN python3 -m pip install --no-cache-dir semgrep==${SEMGREP_VERSION} && \
     rm -rf ~/.cache/pip
 
