@@ -156,7 +156,7 @@ RUN tar -xz -f kubeconform.tar.gz kubeconform && rm kubeconform.tar.gz
 
 # Install buildkit (for alexos-cli build); the daemonless script comes from the same tag
 # renovate: datasource=github-releases depName=moby/buildkit
-ARG BK_VERSION=v0.35.0
+ARG BK_VERSION=v0.35.1
 RUN wget -q https://github.com/moby/buildkit/releases/download/${BK_VERSION}/buildkit-${BK_VERSION}.linux-amd64.tar.gz -O /tmp/buildkit.tgz && \
     tar -xzf /tmp/buildkit.tgz -C /tmp && mv /tmp/bin/* /usr/local/bin/ && rm -rf /tmp/buildkit.tgz /tmp/bin && \
     wget -q https://raw.githubusercontent.com/moby/buildkit/${BK_VERSION}/examples/buildctl-daemonless/buildctl-daemonless.sh -O /usr/local/bin/buildctl-daemonless.sh && \
